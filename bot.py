@@ -1,33 +1,35 @@
 import logging
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters
-import config
-import filters as msgfilter
-import admin
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+
+TOKEN = "8783119872:AAEhWqeQi-WBeNMq3WexW7rP1HmvFXwABow"
 
 logging.basicConfig(level=logging.INFO)
 
-async def start(update, context):
-    await update.message.reply_text("🛡 Guardian Bot Active")
+def start(update, context):
+    update.message.reply_text("🛡 Spam Protection Bot Active")
 
-async def message_handler(update, context):
-    if update.message.text:
-        await msgfilter.check_message(update, context)
+def check_message(update, context):
+    text = update.message.text.lower()
+
+    spam_words = ["http", "t.me", "free money", "join channel"]
+
+    for word in spam_words:
+        if word in text:
+            update.message.delete()
+            update.message.reply_text("⚠️ Spam message removed")
+            break
 
 def main():
+    updater = Updater(TOKEN, use_context=True)
+    dp = updater.dispatcher
 
-    app = ApplicationBuilder().token(config.TOKEN).build()
+    dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(MessageHandler(Filters.text, check_message))
 
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("ban", admin.ban))
-    app.add_handler(CommandHandler("mute", admin.mute))
+    print("Bot started...")
 
-    app.add_handler(
-        MessageHandler(filters.TEXT & (~filters.COMMAND), message_handler)
-    )
-
-    print("Guardian bot running...")
-
-    app.run_polling()
+    updater.start_polling()
+    updater.idle()
 
 if __name__ == "__main__":
     main()
