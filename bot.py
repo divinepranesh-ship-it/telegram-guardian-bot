@@ -1,35 +1,35 @@
-import logging
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram.ext import Application, CommandHandler, MessageHandler, filters
 
-TOKEN = "8783119872:AAEhWqeQi-WBeNMq3WexW7rP1HmvFXwABow"
-
-logging.basicConfig(level=logging.INFO)
-
-def start(update, context):
-    update.message.reply_text("🛡 Spam Protection Bot Active")
-
-def check_message(update, context):
-    text = update.message.text.lower()
-
-    spam_words = ["http", "t.me", "free money", "join channel"]
-
-    for word in spam_words:
-        if word in text:
-            update.message.delete()
-            update.message.reply_text("⚠️ Spam message removed")
-            break
+from config import BOT_TOKEN
+from moderation import warn_user, mute_user
+from antiflood import antiflood
+from welcome import welcome_user
 
 def main():
-    updater = Updater(TOKEN, use_context=True)
-    dp = updater.dispatcher
 
-    dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(MessageHandler(Filters.text, check_message))
+    app = Application.builder().token(BOT_TOKEN).build()
 
-    print("Bot started...")
+    app.add_handler(CommandHandler("warn", warn_user))
+    app.add_handler(CommandHandler("mute", mute_user))
 
-    updater.start_polling()
-    updater.idle()
+    app.add_handler(
+        MessageHandler(
+            filters.StatusUpdate.NEW_CHAT_MEMBERS,
+            welcome_user
+        )
+    )
+
+    app.add_handler(
+        MessageHandler(
+            filters.TEXT & ~filters.COMMAND,
+            antiflood
+        )
+    )
+
+    print("Bot Running...")
+
+    app.run_polling()
+
 
 if __name__ == "__main__":
     main()
