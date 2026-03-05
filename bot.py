@@ -1,5 +1,6 @@
+import asyncio
 import logging
-from telegram.ext import ApplicationBuilder, MessageHandler, CommandHandler, filters
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters
 import config
 import filters as msgfilter
 import admin
@@ -7,19 +8,13 @@ import admin
 logging.basicConfig(level=logging.INFO)
 
 async def start(update, context):
-
-    await update.message.reply_text(
-        "🛡 Guardian Bot Active\nGroup protected from spam."
-    )
-
+    await update.message.reply_text("🛡 Guardian Bot Active")
 
 async def message_handler(update, context):
-
     if update.message.text:
         await msgfilter.check_message(update, context)
 
-
-def main():
+async def main():
 
     app = ApplicationBuilder().token(config.TOKEN).build()
 
@@ -33,8 +28,7 @@ def main():
 
     print("Guardian bot running...")
 
-    app.run_polling()
-
+    await app.run_polling()
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
