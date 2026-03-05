@@ -1,4 +1,3 @@
-import asyncio
 import logging
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters
 import config
@@ -14,7 +13,7 @@ async def message_handler(update, context):
     if update.message.text:
         await msgfilter.check_message(update, context)
 
-async def main():
+def main():
 
     app = ApplicationBuilder().token(config.TOKEN).build()
 
@@ -28,7 +27,7 @@ async def main():
 
     print("Guardian bot running...")
 
-    await app.run_polling()
+    app.run_polling()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
